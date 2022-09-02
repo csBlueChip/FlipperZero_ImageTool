@@ -31,6 +31,8 @@ int  main (int argc,  char* argv[])
 	const char*           name     = argv[1];
 	FILE*                 fh       = fopen(argv[2], "wb");
 
+	uint32_t              white    = 0xFF;
+
 	int                   rv       = 0;  // assume success
 
 	// allocate buffers
@@ -45,6 +47,10 @@ int  main (int argc,  char* argv[])
 		goto bail;
 	}
 
+	// Find white value
+	for (x = 1;  x < img.bpp;  x++)
+		white = (white << 8) | 0xFF ;
+
 	// build bit pattern
 	// create the comment as we go
 	for (pp = img.b,  y = 0;  y < img.h;  y++) {
@@ -53,7 +59,7 @@ int  main (int argc,  char* argv[])
 			// read pixel
 			for (pix = 0,  z = 0;  z < img.bpp;  pix = (pix << 8) | *pp++, z++) ;
 			// get bit and draw
-			if (!pix) {
+			if (pix < white) {
 				b = (b << 1) | 1;
 				fprintf(fh, "##");
 			} else {
