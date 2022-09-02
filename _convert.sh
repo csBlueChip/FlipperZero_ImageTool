@@ -35,18 +35,21 @@ cat _convert.c >> ${C}.c
 
 # compile & run converter
 rm -f ${C}
-gcc ${C}.c -o ${C}
+gcc ${C}.c -DIMGTEST -o ${C}
 ./${C} ${F} img_${F}.c
 rm ${C} ${C}.c
 
 # (create &) update header
-[[ ! -f images.h ]] && cp _convert.h images.h
-sed -i "/img_${F}/d" images.h
+[[ ! -f images.h ]] && cp _convert_images.h images.h
+sed -i "/ img_${F};/d" images.h
 sed -i "s#//\[TAG\]#//\[TAG\]\nextern  const image_t  img_${F};#" images.h
+
+# sample FZ code
+[[ ! -f images.c ]] && cp _convert_images.c images.c
 
 # test
 sed "s/zzz/${F}/" _convert_test.c > img_${F}_test.c
 rm -f img_${F}
-gcc img_${F}_test.c img_${F}.c -o img_${F}
+gcc img_${F}_test.c img_${F}.c -DIMGTEST -o img_${F}
 ./img_${F}
 rm -f img_${F} img_${F}_test.c
