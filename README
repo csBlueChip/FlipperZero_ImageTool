@@ -1,0 +1,36 @@
+1.	Prepare the image
+	a. 	Open your image in GIMP
+	b. 	File -> Export As
+			filename: EXAMPLE.c
+			Type    : "C source code"
+		[Export]
+			prefixed name: gimp_image
+			Comment      : <any>
+			[x] Use GLib types
+			[ ] <<all other options>>
+			Opacity      : 100%
+		[Export]
+
+2.	Prepare conversion tool [stored in (eg.) /path/]
+	a.	cp  _convert*.*  /path/
+	b.	cp  EXAMPLE.c    /path/
+
+3.	Run the conversion tool
+	a.	cd  /path/
+	b.	./_convert.sh  EXAMPLE.c
+
+4.	All being well, you will see an ascii version of your image.
+	If not, then you're gonna have to submit a bug report <shrug>
+
+5.	You should now have:
+		img_EXAMPLE.c - The data for your image
+		images.h      - A header for ALL images you have processed in this directory
+
+6.	The show() function, which (optionally) decompresses, and 
+	displays your image can be found in:  _convert_test.c
+
+	The PLOT macro is whatever command you use to plot a pixel on the screen.
+		On the FZ, this is TWO function calls:
+			void  canvas_set_color(Canvas* canvas,  Color color) ;
+			void  canvas_draw_dot (Canvas* canvas,  uint8_t x,  uint8_t y) ;
+		There is an obvious optimisation: ONLY call set_color() when the colour changes!
