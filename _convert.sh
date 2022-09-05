@@ -1,55 +1,79 @@
 #!/bin/bash
 
 [ -z $1 ] && {
-	echo "specify file.h"
+	echo "Specify an image"
+	echo "gimp -> export -> c source file -> [x] gunit names"
 	exit 2
 }
 
-[ ! -f $1 ] && {
-	echo "file missing $F"
-	exit 1
-}
+echo $*
 
-# filename (sans extension)
-F=${1%%.*}
-echo "¦$F¦"
+for N in $* ; do
 
-# compile name
-C=${F}_
+	[ ! -f $N ] && {
+		echo "!! File missing $N"
+		continue
+	}
 
-# clean up gimp output
-sed -e "s/gimp_image/img/g" \
-	-e 's/guint8/unsigned char/g' \
-	-e 's/width/w/g' \
-	-e 's/height/h/g' \
-	-e 's/bytes_per_pixel/bpp/g' \
-	-e 's/pixel_data/b/g' \
-	-e 's/guint/unsigned int/g' \
-	$1 \
-	| grep -v ^/ \
-	| grep -v ^$ \
-	> ${C}.c
+	# filename (sans extension)
+	FN=$(basename -- "$N")
+	EXT="${FN##*.}"
+	NAME="${FN%.*}"
 
-# append conversion code
-cat _convert.c >> ${C}.c
+	OUTDIR=img_/
+	mkdir -p ${OUTDIR}
 
-# compile & run converter
-rm -f ${C}
-gcc ${C}.c -DIMGTEST -o ${C}
-./${C} ${F} img_${F}.c
-rm ${C} ${C}.c
+	HDR=${OUTDIR}/images.h
+	SRC=${OUTDIR}/images.c
 
-# (create &) update header
-[[ ! -f images.h ]] && cp _convert_images.h images.h
-sed -i "/ img_${F};/d" images.h
-sed -i "s#//\[TAG\]#//\[TAG\]\nextern  const image_t  img_${F};#" images.h
+	OUT=${OUTDIR}/img_${NAME}.c
 
-# sample FZ code
-[[ ! -f images.c ]] && cp _convert_images.c images.c
+	echo "¦${NAME}¦ -> ¦${OUT}¦"
 
-# test
-sed "s/zzz/${F}/" _convert_test.c > img_${F}_test.c
-rm -f img_${F}
-gcc img_${F}_test.c img_${F}.c -DIMGTEST -o img_${F}
-./img_${F}
-rm -f img_${F} img_${F}_test.c
+	TESTX=test_${NAME}
+	TESTC=test_${NAME}.c
+
+	# compile name
+	CONV=${NAME}_
+
+	# clean up gimp output
+	sed -e "s/gimp_image/img/g" \
+		-e 's/guint8/unsigned char/g' \
+		-e 's/width/w/g' \
+		-e 's/height/h/g' \
+		-e 's/bytes_per_pixel/bpp/g' \
+		-e 's/pixel_data/b/g' \
+		-e 's/guint/unsigned int/g' \
+		$N \
+		| grep -v ^/ \
+		| grep -v ^$ \
+		> ${CONV}.c
+
+	# append conversion code
+	cat _convert.c >> ${CONV}.c
+
+	# compile & run converter
+	rm -f ${CONV}
+	gcc ${CONV}.c -DIMGTEST -o ${CONV}
+	./${CONV} ${NAME} ${OUT}
+	rm -f ${CONV} ${CONV}.c
+
+	# (create &) update header
+	[[ ! -f ${HDR} ]] && cp _convert_images.h ${HDR}
+	sed -i "# img_${NAME};#d" ${HDR}
+	sed -i "s#//\[TAG\]#//\[TAG\]\nextern  const image_t  img_${NAME};#" ${HDR}
+
+	# sample FZ code
+	[[ ! -f images.c ]] && cp _convert_images.c ${SRC}
+
+	# test
+	ROOT=${PWD}
+	pushd ${OUTDIR}
+	sed  "s/zzz/${NAME}/" ${ROOT}/_convert_test.c  > ${TESTC}
+	rm -f ${TESTX}
+	gcc  ${TESTC}  ${OUT##*/}  -DIMGTEST  -o ${TESTX}
+	./${TESTX}
+	rm -f ${TESTX} ${TESTC}
+	popd
+
+done
