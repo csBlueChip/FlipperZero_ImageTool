@@ -28,7 +28,7 @@ for N in $* ; do
 
 	OUT=${OUTDIR}/img_${NAME}.c
 
-	echo "¦${NAME}¦ -> ¦${OUT}¦"
+	echo -e "\n¦${N}¦  ==  ¦${NAME}¦  ->  ¦${OUT}¦"
 
 	TESTX=test_${NAME}
 	TESTC=test_${NAME}.c
@@ -60,7 +60,7 @@ for N in $* ; do
 
 	# (create &) update header
 	[[ ! -f ${HDR} ]] && cp _convert_images.h ${HDR}
-	sed -i "# img_${NAME};#d" ${HDR}
+	sed -i "/ img_${NAME};/d" ${HDR}
 	sed -i "s#//\[TAG\]#//\[TAG\]\nextern  const image_t  img_${NAME};#" ${HDR}
 
 	# sample FZ code
@@ -68,12 +68,12 @@ for N in $* ; do
 
 	# test
 	ROOT=${PWD}
-	pushd ${OUTDIR}
+	pushd ${OUTDIR} >/dev/null
 	sed  "s/zzz/${NAME}/" ${ROOT}/_convert_test.c  > ${TESTC}
 	rm -f ${TESTX}
 	gcc  ${TESTC}  ${OUT##*/}  -DIMGTEST  -o ${TESTX}
 	./${TESTX}
 	rm -f ${TESTX} ${TESTC}
-	popd
+	popd >/dev/null
 
 done
