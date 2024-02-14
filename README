@@ -1,5 +1,5 @@
 1.	Prepare the image
-	a. 	Open your image in GIMP
+	a. 	Open your *black and white* image in GIMP
 	b. 	File -> Export As
 			filename: EXAMPLE.c
 			Type    : "C source code"
@@ -22,9 +22,9 @@
 4.	All being well, you will see an ascii version of your image.
 	If not, then you're gonna have to submit a bug report <shrug>
 
-5.	You should now have:
-		img_EXAMPLE.c - The data for your image
-		img_*.c       - other images
-		images.h      - A header for ALL images you have processed in this directory
-		images.c      - sample FlipperZero show() function [not optimised]
-
+5.	You should now have a directory called img_/
+	In that directory should be
+		img_EXAMPLE.c - The data for your new image
+		img_*.c       - The data for other images
+		images.h      - A header for ALL images that have been created in this directory
+		images.c      - A sample FlipperZero show() function [not optimised]
